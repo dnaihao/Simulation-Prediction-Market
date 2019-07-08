@@ -65,7 +65,7 @@ def main():
 
     # initialize market maker
     mk = MarketMaker()
-    enter_times = np.random.poisson(0.1, max_iteration)
+    enter_times = np.random.poisson(2.3, max_iteration)
     enter_times = list(np.cumsum(enter_times) + num_observed_sample)
     # Pass in the data which the agents need to update their beliefs
     # The number of data points passed in to agent should be num_observed_sample
@@ -78,6 +78,8 @@ def main():
         delta_1, delta_2 = curr_agent.calculate_shares_to_buy(mk.num_trade, mk.current_market_price)
         curr_agent.update_security(delta_1, delta_2)
         mk.update_param(delta_1, delta_2)
+
+    print("enter time: {}".format(enter_times))
     print(mk.current_market_price)
 
 

@@ -25,6 +25,8 @@ class BayesianAgent:
                      length of the data should be self.update_size
         :return:
         """
+        print("data: {}".format(data))
+        print("data mean: {}".format(mean(data)))
         self.mean = (self.mean * self.size + self.update_size * mean(data))/(self.update_size + self.size)
         sqr_data_mean = mean([x**2 for x in data])
         self.sqr_mean = (self.sqr_mean * self.size + self.update_size * sqr_data_mean)/(self.update_size + self.size)
@@ -64,6 +66,8 @@ class BayesianAgent:
         """
         theta_1, theta_2 = self.calculate_outstanding_shares(current_market_price)
         belief_1 = self.calculate_belief(num_trades, current_market_price[0], "X")
+        print("private signal: {}, belief_1: {}".format(self.mean, belief_1))
+        print()
         belief_2 = self.calculate_belief(num_trades, current_market_price[1], "X_sqr")
         delta_1 = belief_1 / (belief_2 - belief_1**2) - theta_1
         delta_2 = - theta_2 - 1/(2 * (belief_2 - belief_1**2))
