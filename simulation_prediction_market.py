@@ -93,9 +93,7 @@ def main():
         mk.update_param(delta)
 
     print(mk.current_market_price)
-
-    print("Variance: {}".format(mk.current_market_price[1] - mk.current_market_price[0] ** 2))
-
+    
 
 if __name__ == '__main__':
     main()
