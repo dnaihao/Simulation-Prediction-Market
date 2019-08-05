@@ -9,7 +9,7 @@ class MarketMaker:
 
     def __init__(self):
         self.num_trade = 0
-        self.outstanding_security_amount = [1/100, -1/20000]    # number of securities in the market (list)
+        self.outstanding_security_amount = -1/100               # number of securities in the market
         self.current_market_price = [100, 20000]                # with current delta, theta_2 is always negative
 
     @staticmethod
