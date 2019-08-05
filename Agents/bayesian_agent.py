@@ -61,7 +61,6 @@ class BayesianAgent:
         Calculate the number of shares agents should purchase to move the current market price to his or her expectation
         :param  num_trades: the number of trades the market maker has seen in market
         :param  current_market_price: list of prices
-        :param  security_type: 0 is X security, 1 is X**2 security
         :return:
         """
         theta_1, theta_2 = self.calculate_outstanding_shares(current_market_price)
