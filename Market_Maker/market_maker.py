@@ -15,7 +15,7 @@ class MarketMaker:
     @staticmethod
     def sufficient_statistic(x):
         """
-        phi(x) Gaussian distribution
+        phi(x) Bernoulli distribution
         :param x:
         :return:
         """
