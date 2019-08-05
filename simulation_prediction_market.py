@@ -88,9 +88,9 @@ def main():
         ###################################################
         
         curr_agent.update_param(observed_data)
-        delta_1, delta_2 = curr_agent.calculate_shares_to_buy(mk.num_trade, mk.current_market_price)
-        curr_agent.update_security(delta_1, delta_2)
-        mk.update_param(delta_1, delta_2)
+        delta = curr_agent.calculate_shares_to_buy(mk.current_market_price)
+        curr_agent.update_security(delta)
+        mk.update_param(delta)
 
     print(mk.current_market_price)
 
