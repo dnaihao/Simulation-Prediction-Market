@@ -48,23 +48,19 @@ def main():
     agent_number = args.agent_number
     max_iteration = args.max_iteration
     data_path = "./Data/weight-height.csv"
-    prior_range = 2000
-    num_prior = 500
     num_observed_sample = 200
     # import data
     data = import_data(data_path)
-    prior = data[:prior_range]
-    data = data[prior_range:]
 
     # initialize agents
     agents = []
     for i in range(agent_number):
-        agent_prior = choices(prior, k=num_prior)
-        agent = BayesianAgent(agent_prior, update_size=num_observed_sample)
+        agent = BayesianAgent(update_size=num_observed_sample)
         agents.append(agent)
 
     # initialize market maker
     mk = MarketMaker()
+
     enter_times = np.random.poisson(7.5, max_iteration)     # lambda*max_iteration ~= size of dataset
     enter_times = list(np.cumsum(enter_times) + num_observed_sample)
 
@@ -86,8 +82,7 @@ def main():
         #     print(observed_data)
         #     import ipdb; ipdb.set_trace()
         ###################################################
-        
-        curr_agent.update_param(observed_data)
+        curr_agent.update_param(observed_data, mk.num_trade, mk.current_market_price)
         delta = curr_agent.calculate_shares_to_buy(mk.current_market_price)
         curr_agent.update_security(delta)
         mk.update_param(delta)

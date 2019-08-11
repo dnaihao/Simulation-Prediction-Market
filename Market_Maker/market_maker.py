@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from math import log
+from math import log, exp
 
 
 class MarketMaker:
@@ -9,7 +9,7 @@ class MarketMaker:
 
     def __init__(self):
         self.num_trade = 0
-        self.outstanding_security_amount = -1/100               # number of securities in the market (list)
+        self.outstanding_security_amount = 0                    # number of securities in the market (list)
         self.current_market_price = 0.5                         # with current delta, theta_2 is always negative
 
     @staticmethod
@@ -26,16 +26,16 @@ class MarketMaker:
         cost function == log partition func
         :return:
         """
-        return -log(-self.outstanding_security_amount)
+        return log(1 + exp(self.outstanding_security_amount))
 
     @staticmethod
-    def calc_current_market_price(theta):
+    def calc_current_market_price(eta):
         """
         calculate current market price
-        :param: theta:
+        :param: eta:
         :return: current market price
         """
-        p = -1 / theta
+        p = exp(eta)/(1 + exp(eta))
         return p
 
     def update_param(self, delta):
@@ -46,4 +46,7 @@ class MarketMaker:
         """
         self.num_trade += 1
         self.outstanding_security_amount += delta           # update outstanding shares
+
+        # update current price from the perspective of market maker
+        # should be the same with the current agent's posterior
         self.current_market_price = self.calc_current_market_price(self.outstanding_security_amount)

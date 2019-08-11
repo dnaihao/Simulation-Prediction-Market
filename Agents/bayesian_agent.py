@@ -2,6 +2,7 @@
 
 from statistics import mean
 from math import sqrt
+from math import log
 
 
 class BayesianAgent:
@@ -9,54 +10,69 @@ class BayesianAgent:
     bayesian agent
     """
 
-    def __init__(self, data, update_size=10):
-        self.size = len(data)            # size of dataset: reliability of his private signal
-        self.mean = mean(data)           # private signal: random assigned
-        # self.decision = False            # sell(False) or buy(True) security
+    def __init__(self, update_size=10):
         self.security_amount = 0         # two security amounts
         self.update_size = update_size
-        # self.budget = None: might be used in future
+        # niu in our notation
+        self.datapoints = None
+        # niu*Chi in our notation
+        self.total = None
 
-    def update_param(self, data):
+    @staticmethod
+    def u(x):
         """
-        update private signal based on observed samples
-        :param data: the data observed by the agent after entering the market
-                     length of the data should be self.update_size
+        sufficient statistic function for Bernoulli
+        :param x:
         :return:
         """
-        self.mean = (self.mean * self.size + self.update_size * mean(data))/(self.update_size + self.size)
-        self.size += self.update_size
+        return x
+
+    def update_param(self, data, trade_num, current_market_price):
+        """
+
+        :param data: the data observed by the agent before his entrance to the market
+        :param trade_num: current trade number published by market maker
+        :param current_market_price:
+        :return:
+        """
+        # niu = nm
+        self.datapoints = trade_num * self.update_size + self.update_size
+
+        sum_of_data = sum([self.u(x) for x in data])
+        # niu * Chi
+        self.total = sum_of_data + trade_num * self.update_size *current_market_price
 
     @staticmethod
     def calculate_outstanding_shares(current_market_price):
         """
         Calculate the number of outstanding shares using the current market price
         by:
-            P(theta) = -1/theta
-        :return: theta
+            P(eta) = e ** eta / (1 + e **eta)
+        :return: eta: outstanding shares in market currently
         """
-        return -1/current_market_price
+        # base not specified, get the natural log
+        return log(current_market_price / (1 - current_market_price))
 
-    def calculate_belief(self):
-        """
-         Calculate belief of agent based on market price by
-         (n * niu + m * miu) / (n + m)
-         , which is the updated mean
-        :return: belief
-        """
-        return self.mean
+    # def calculate_belief(self):
+    #     """
+    #      Calculate belief of agent based on market price by
+    #      (n * niu + m * miu) / (n + m)
+    #      , which is the updated mean
+    #     :return: belief
+    #     """
+    #     return self.mean
 
     def calculate_shares_to_buy(self, current_market_price):
         """
         Calculate the number of shares agents should purchase to move the current market price to his or her expectation
-        :param  current_market_price: list of prices
+        :param  current_market_price:
         :return:
         """
-        theta = self.calculate_outstanding_shares(current_market_price)
-        belief = self.calculate_belief()
+        # eta: outstanding shares in market currently
+        eta = self.calculate_outstanding_shares(current_market_price)
         # print("private signal: {}, belief_1: {}".format(self.mean, belief_1))
         # print()
-        delta = -1/belief - theta
+        delta = log(self.total/(self.datapoints - self.total)) - eta
         return delta
 
     def update_security(self, delta):
