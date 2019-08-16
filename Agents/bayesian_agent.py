@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-from statistics import mean
-from math import sqrt
+from math import log
 
 
 class BayesianAgent:
@@ -9,77 +8,78 @@ class BayesianAgent:
     bayesian agent
     """
 
-    def __init__(self, data, update_size=10):
-        self.size = len(data)           # size of dataset: reliability of his private signal (list)
-        self.mean = mean(data)        # private signal: random assigned (list)
-        self.sqr_mean = mean([x**2 for x in data])
-        self.decision = [False, False]            # sell(False) or buy(True) security (list of bool)
-        self.security_amount = [0, 0]     # two security amounts (list)
+    def __init__(self, update_size=10):
+        self.security_amount = 0         # one security amounts
+        # m
         self.update_size = update_size
-        # self.budget = None: might be used in future
+        # niu in our notation
+        self.datapoints = None
+        # niu*Chi in our notation
+        self.total = None
 
-    def update_param(self, data):
+    @staticmethod
+    def u(x):
         """
-        update private signal based on observed samples
-        :param data: the data observed by the agent after entering the market
-                     length of the data should be self.update_size
+        sufficient statistic function for Bernoulli
+        :param x:
         :return:
         """
-        # print("data: {}".format(data))
-        # print("data mean: {}".format(mean(data)))
-        self.mean = (self.mean * self.size + self.update_size * mean(data))/(self.update_size + self.size)
-        sqr_data_mean = mean([x**2 for x in data])
-        self.sqr_mean = (self.sqr_mean * self.size + self.update_size * sqr_data_mean)/(self.update_size + self.size)
-        self.size += self.update_size
+        return x
+
+    def update_param(self, data, trade_num, current_market_price):
+        """
+
+        :param data: the data observed by the agent before his entrance to the market
+        :param trade_num: current trade number published by market maker
+        :param current_market_price:
+        :return:
+        """
+        # niu = nm
+        self.datapoints = trade_num * self.update_size + self.update_size
+
+        sum_of_data = sum([self.u(x) for x in data])
+        # niu * Chi
+        self.total = sum_of_data + trade_num * self.update_size *current_market_price
 
     @staticmethod
     def calculate_outstanding_shares(current_market_price):
         """
         Calculate the number of outstanding shares using the current market price
-        :return: theta_1, theta_2
+        by:
+            P(eta) = e ** eta / (1 + e **eta)
+        :return: eta: outstanding shares in market currently
         """
-        p_1, p_2 = current_market_price[0], current_market_price[1]
-        theta_1 = p_1/(p_2-p_1**2)
-        theta_2 = 0.5/(p_1**2-p_2)
-        return theta_1, theta_2
+        # base not specified, get the natural log
+        return log(current_market_price / (1 - current_market_price))
 
-    def calculate_belief(self, num_trades, current_market_price, security_type="X"):
-        """
-         Calculate belief of agent based on market price
-        :param security_type: takes two values, "X" or "X_sqr"
-        :param num_trades: n
-        :param current_market_price: niu
-        :return: belief
-        """
-        if security_type == "X":
-            return (num_trades * current_market_price + self.mean) / (num_trades + 1)
-        elif security_type == "X_sqr":
-            return (num_trades * current_market_price + self.sqr_mean) / (num_trades + 1)
+    # def calculate_belief(self):
+    #     """
+    #      Calculate belief of agent based on market price by
+    #      (n * niu + m * miu) / (n + m)
+    #      , which is the updated mean
+    #     :return: belief
+    #     """
+    #     return self.mean
 
-    def calculate_shares_to_buy(self, num_trades, current_market_price):
+    def calculate_shares_to_buy(self, current_market_price):
         """
         Calculate the number of shares agents should purchase to move the current market price to his or her expectation
-        :param  num_trades: the number of trades the market maker has seen in market
-        :param  current_market_price: list of prices
-        :param  security_type: 0 is X security, 1 is X**2 security
+        :param  current_market_price:
         :return:
         """
-        theta_1, theta_2 = self.calculate_outstanding_shares(current_market_price)
-        belief_1 = self.calculate_belief(num_trades, current_market_price[0], "X")
+        # eta: outstanding shares in market currently
+        eta = self.calculate_outstanding_shares(current_market_price)
         # print("private signal: {}, belief_1: {}".format(self.mean, belief_1))
         # print()
-        belief_2 = self.calculate_belief(num_trades, current_market_price[1], "X_sqr")
-        delta_1 = belief_1 / (belief_2 - belief_1**2) - theta_1
-        delta_2 = - theta_2 - 1/(2 * (belief_2 - belief_1**2))
-        return delta_1, delta_2
+        delta = log(self.total/(self.datapoints - self.total)) - eta
+        return delta
 
-    def update_security(self, delta_1, delta_2):
+    def update_security(self, delta):
         """
         Update the number of securities an agent has based on whether he or she buys or sells securities
         :return:
         """
         # A positive delta stands for a buy, a negative delta stands for a sell
-        self.security_amount[0] += delta_1
-        self.security_amount[1] += delta_2
+        self.security_amount += delta
 
 
