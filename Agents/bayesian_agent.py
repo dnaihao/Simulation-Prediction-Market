@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from statistics import mean
-from math import sqrt
 from math import log
 
 
@@ -11,7 +9,8 @@ class BayesianAgent:
     """
 
     def __init__(self, update_size=10):
-        self.security_amount = 0         # two security amounts
+        self.security_amount = 0         # one security amounts
+        # m
         self.update_size = update_size
         # niu in our notation
         self.datapoints = None

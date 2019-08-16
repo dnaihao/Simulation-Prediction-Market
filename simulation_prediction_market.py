@@ -8,7 +8,6 @@ Simulation Prediction Market Main Executable
 import argparse
 import pandas as pd
 import numpy as np
-from random import choices
 from Agents.bayesian_agent import BayesianAgent
 from Market_Maker.market_maker import MarketMaker
 
@@ -48,7 +47,11 @@ def main():
     agent_number = args.agent_number
     max_iteration = args.max_iteration
     data_path = "./Data/weight-height.csv"
+
+    # real final result
+    real_outcome = None
     num_observed_sample = 200
+
     # import data
     data = import_data(data_path)
 
@@ -87,7 +90,11 @@ def main():
         curr_agent.update_security(delta)
         mk.update_param(delta)
 
-    print(mk.current_market_price)
+    # Payoff logic
+    payoff = [agent.security_amount * real_outcome for agent in agents]
+
+    print("Current market price is {}, while the real outcome is {}".format(mk.current_market_price, real_outcome))
+    print("The payoff for each agent is {}".format(payoff))
     
 
 if __name__ == '__main__':
