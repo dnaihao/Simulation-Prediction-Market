@@ -1,3 +1,6 @@
-# NG Simulation-Prediction-Market
+# Simulation-Prediction-Market
 
-Bayesian Prediction Market NG Simulation
+Bayesian Prediction Market Simulation. Works for data subject to Bernoulli distribution.
+
+related repo:
+https://github.com/shineyruan/Reading-Group-Kutty-Meetings
