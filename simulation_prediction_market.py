@@ -40,7 +40,7 @@ def import_data(path):
     res = pd.read_csv(path)
     # res = res.drop(columns=["Height", "Gender"])
     # return list(res["Weight"])
-    raw_list = res.get_values().tolist()
+    raw_list = res.values.tolist()
     processed_list = [sublist[0] for sublist in raw_list]
     return processed_list
 
