@@ -3,6 +3,8 @@
 """
 
     The Heart Disease Death Rate: 1 in every 4 deaths
+    Link to the disease fact: https://www.cdc.gov/dhdsp/data_statistics/fact_sheets/fs_heart_disease.htm
+    In the generated US_heart_disease_death.csv, 1 represents death after heart attack, 0 represents survival.
 
 """
 import random
