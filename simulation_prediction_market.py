@@ -38,22 +38,26 @@ def import_data(path):
     :return:
     """
     res = pd.read_csv(path)
-    res = res.drop(columns=["Height", "Gender"])
-    return list(res["Weight"])
+    # res = res.drop(columns=["Height", "Gender"])
+    # return list(res["Weight"])
+    raw_list = res.get_values().tolist()
+    processed_list = [sublist[0] for sublist in raw_list]
+    return processed_list
 
 
 def main():
     args = parse_command_line()
     agent_number = args.agent_number
     max_iteration = args.max_iteration
-    data_path = "./Data/weight-height.csv"
+    data_path = "./Data/US_heart_disease_death.csv"
 
     # real final result
-    real_outcome = None
     num_observed_sample = 200
 
     # import data
     data = import_data(data_path)
+
+    real_outcome = sum(data) / len(data)
 
     # initialize agents
     agents = []
