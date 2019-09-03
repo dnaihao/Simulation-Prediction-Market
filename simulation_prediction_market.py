@@ -19,20 +19,21 @@ def parse_command_line():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="verbose showing \
-        simulation process"
+        "-v", "--verbose", action="store_true", default=True, help="verbose\
+        showing simulation process"
     )
     parser.add_argument(
-        "-n", "--agent_number", type=int, help="specify agent number"
+        "agent_number", type=int, help="specify agent number",
     )
     parser.add_argument(
-        "-i", "--max_iteration", type=int, help="specify maximum iteration"
+        "max_iteration", type=int, help="specify maximum iteration",
     )
     parser.add_argument(
         "-d", "--distribution", type=str, help="specify either Bernoulli\
-        or Gaussian distribution", choices={"Gaussian", "Bernoulli"}
+        or Gaussian distribution", choices=["Gaussian", "Bernoulli"]
     )
     args = parser.parse_args()
+
     return args
 
 
@@ -51,7 +52,6 @@ def import_data(path):
 
 
 def main():
-    import pdb; pdb.set_trace()
     args = parse_command_line()
     agent_number = args.agent_number
     max_iteration = args.max_iteration
