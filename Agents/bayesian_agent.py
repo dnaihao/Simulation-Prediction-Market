@@ -6,6 +6,8 @@ from math import log
 class BayesianAgent:
     """
     bayesian agent
+    We are making a very simple assumption here.
+    We don't check if the agent has securities to trade in the first place :/
     """
 
     def __init__(self, distribution):
@@ -32,6 +34,7 @@ class BayesianAgent:
         :return: eta: outstanding shares in market currently
         """
         if self.distribution == "Bernoulli":
+            # TODO: what to do when current_market_price is 1 ???
             return log(current_market_price / (1 - current_market_price))
         elif self.distribution == "Gaussian":
             return current_market_price
@@ -62,7 +65,7 @@ class BayesianAgent:
         miu = (n*chi+miu)/(n+1)
         :return: posterior: the updated posterior
         """
-        prior = sum([u(x) for x in data])/len(data)
+        prior = sum([BayesianAgent.u(x) for x in data])/len(data)
         posterior = (posted_num_trade * current_market_price + prior)/\
         (posted_num_trade + 1)
         return posterior

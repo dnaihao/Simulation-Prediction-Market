@@ -27,11 +27,12 @@ class MarketMaker:
 
 
     # TODO: determine what the equilibrium criteria is
-    def market_equilibrium(self, last_market_price, difference=1):
+    def market_equilibrium(self, last_market_price, difference=0.01):
         """
         Determine whether the market prices have reached equilibrium
         """
-        if abs(self.current_market_price - last_market_price) <= difference:
+        if abs(self.current_market_price - last_market_price) <= difference and\
+        self.num_trade > 1000:
             return True
         else:
             return False

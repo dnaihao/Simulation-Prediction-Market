@@ -46,15 +46,14 @@ def import_data(path, column_name):
 
 def main():
     args = parse_command_line()
-    data_path = "./Data/US_heart_disease_death.csv"
+    data_path = args.dataset
 
     # the number of datapoints agent observes at a time
     # same across all agents
-    num_observed_sample = 200
+    num_observed_sample = 4
 
     # import data
     data = import_data(data_path, args.column_name)
-
     real_outcome = sum(data) / len(data)
 
     # initialize market maker
@@ -74,7 +73,6 @@ def main():
         return
 
     enter_time = 0
-    posted_num_trade = 0
     # The number of agents in this market is not pre-ordained
     # The trade will stop once the market reached equilibrium
     while True:
@@ -87,6 +85,7 @@ def main():
         shares_to_buy, _ = agent.calculate_shares_to_buy(observed_data,\
          mk.num_trade, mk.current_market_price)
         mk.update_param(shares_to_buy)
+        # TODO: equilibrium is necessary in real life market, not a must here
         if mk.market_equilibrium(last_market_price):
             break
 
