@@ -19,14 +19,11 @@ def parse_command_line():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--verbose", action="store_true", default=True, help="verbose\
-        showing simulation process"
+        "dataset", type=str, help="specify path to the dataset"
     )
     parser.add_argument(
-        "agent_number", type=int, help="specify agent number",
-    )
-    parser.add_argument(
-        "max_iteration", type=int, help="specify maximum iteration",
+        "column_name", type=str, help="specify column name in the dataframe to\
+        make a prediction on"
     )
     parser.add_argument(
         "-d", "--distribution", type=str, help="specify either Bernoulli\
@@ -37,74 +34,68 @@ def parse_command_line():
     return args
 
 
-def import_data(path):
+def import_data(path, column_name):
     """
     import real data from csv file
-    :param: path: data path
-    :return:
+    :param: path: str, data path
+    :return: processed_list: list, list of actual data
     """
     res = pd.read_csv(path)
-    # res = res.drop(columns=["Height", "Gender"])
-    # return list(res["Weight"])
-    raw_list = res.values.tolist()
-    processed_list = [sublist[0] for sublist in raw_list]
+    processed_list = res[column_name].tolist()
     return processed_list
-
 
 def main():
     args = parse_command_line()
-    agent_number = args.agent_number
-    max_iteration = args.max_iteration
     data_path = "./Data/US_heart_disease_death.csv"
 
-    # real final result
+    # the number of datapoints agent observes at a time
+    # same across all agents
     num_observed_sample = 200
 
     # import data
-    data = import_data(data_path)
+    data = import_data(data_path, args.column_name)
 
     real_outcome = sum(data) / len(data)
 
-    # initialize agents
-    agents = []
-    for i in range(agent_number):
-        agent = BayesianAgent(update_size=num_observed_sample)
-        agents.append(agent)
-
     # initialize market maker
-    mk = MarketMaker()
+    mk = MarketMaker(distribution=args.distribution)
 
-    enter_times = np.random.poisson(7.5, max_iteration)     # lambda*max_iteration ~= size of dataset
-    enter_times = list(np.cumsum(enter_times) + num_observed_sample)
+    ############### Agents enter with Poisson distribution ###############
+    # enter_times = np.random.poisson(7.5, max_iteration)
+    # lambda*max_iteration ~= size of dataset
+    # enter_times = list(np.cumsum(enter_times) + num_observed_sample)
+    ######################################################################
 
-    #################### for debug ####################
-    # print("enter time: {}".format(enter_times))
-    ###################################################
+    # The agent are now all the same
+    # They observe different data points though
+    try:
+        agent = BayesianAgent(distribution=args.distribution)
+    except TypeError:
+        return
 
-    # Pass in the data which the agents need to update their beliefs
-    # The number of data points passed in to agent should be num_observed_sample
-    for i in range(max_iteration):
-        agent_idx = i % agent_number
-        curr_agent = agents[agent_idx]
-        enter_time = enter_times[i]
-        observed_data = data[-num_observed_sample + enter_time :enter_time]
-
-        #################### for debug ####################
-        # if len(observed_data) < 2:
-        #     print(i)
-        #     print(observed_data)
-        #     import ipdb; ipdb.set_trace()
-        ###################################################
-        curr_agent.update_param(observed_data, mk.num_trade, mk.current_market_price)
-        delta = curr_agent.calculate_shares_to_buy(mk.current_market_price)
-        curr_agent.update_security(delta)
-        mk.update_param(delta)
+    enter_time = 0
+    posted_num_trade = 0
+    # The number of agents in this market is not pre-ordained
+    # The trade will stop once the market reached equilibrium
+    while True:
+        last_market_price = mk.current_market_price
+        observed_data = data[enter_time: enter_time + num_observed_sample]
+        enter_time += num_observed_sample
+        # Out of data to observe
+        if enter_time > len(data):
+            break
+        shares_to_buy, _ = agent.calculate_shares_to_buy(observed_data,\
+         mk.num_trade, mk.current_market_price)
+        mk.update_param(shares_to_buy)
+        if mk.market_equilibrium(last_market_price):
+            break
 
     # Payoff logic
-    payoff = [agent.security_amount * real_outcome for agent in agents]
+    # For Bernoulli distribution the payoff is quite straight forward
+    # payoff = [agent.security_amount * real_outcome for agent in agents]
 
-    print("Current market price is {}, while the real outcome is {}".format(mk.current_market_price, real_outcome))
-    print("The payoff for each agent is {}".format(payoff))
+    print("Current market price is {}, while the real outcome is {}".\
+    format(mk.current_market_price, real_outcome))
 
 
 if __name__ == '__main__':
